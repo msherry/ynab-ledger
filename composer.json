@@ -1,0 +1,14 @@
+{
+	"name": "alanpearce/ynab-ledger",
+	"description": "YNAB to ledger transaction & budget converter",
+	"type": "project",
+	"license": "BSD-3-Clause",
+    "require": {
+        "corneltek/cliframework": "2.4.*"
+    },
+	"autoload": {
+		"psr-4": {
+			"YnabLedger\\": "src/"
+		}
+	}
+}

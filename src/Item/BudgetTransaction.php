@@ -7,4 +7,5 @@ class BudgetTransaction {
     public $category = [];
     public $in;
     public $out;
+    public $currency;
 }

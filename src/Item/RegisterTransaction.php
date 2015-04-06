@@ -11,5 +11,6 @@ class RegisterTransaction {
     public $memo;
     public $out;
     public $in;
-    public $cleared = false;
+    public $currency;
+    public $cleared;
 }

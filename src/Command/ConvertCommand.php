@@ -129,7 +129,7 @@ function toLedger (Generator $transactions) {
                 $target = new LedgerPosting;
                 $target->account = getAccount(explode(' : ', $txn->payee)[1], $txn);
                 $target->currency = $txn->currency;
-                $target->amount = $txn->out;
+                $target->amount = $txn->in - $txn->out;
                 $lTxn->postings[] = $target;
 
                 $source = new LedgerPosting;
@@ -149,7 +149,7 @@ function toLedger (Generator $transactions) {
                     $target = new LedgerPosting;
                     $target->account = array_merge(['Expenses'], $txn->category);
                     $target->currency = $txn->currency;
-                    $target->amount = $txn->out;
+                    $target->amount = $txn->in - $txn->out;
                     sscanf($txn->memo, "(Split %d/%d) %[^\r]", $i, $k, $target->note);
                     $lTxn->postings[] = $target;
 
@@ -167,7 +167,7 @@ function toLedger (Generator $transactions) {
                 $target = new LedgerPosting;
                 $target->account = array_merge(['Expenses'], $txn->category);
                 $target->currency = $txn->currency;
-                $target->amount = $txn->out;
+                $target->amount = $txn->in - $txn->out;
                 $lTxn->postings[] = $target;
 
                 $source = new LedgerPosting;

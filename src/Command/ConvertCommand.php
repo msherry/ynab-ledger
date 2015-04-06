@@ -251,22 +251,27 @@ function multiRead (SplFileObject $budgetFile, SplFileObject $registerFile, Numb
     $budget = readBudget($budgetFile);
     $register = readRegister($registerFile, $fmt);
     $budget->rewind();
+    $openDate;
     foreach ($register as $rTxn) {
-        if ($rTxn->payee !== 'Starting Balance' &&
-            $rTxn->category[1] !== 'Available this month') {
-            if ($budget->valid()) {
-                $bTxn = $budget->current();
-                $bDate = $bTxn->date;
-                if ($bTxn->date < $rTxn->date) {
-                    do {
-                        $bTxn->date = $rTxn->date;
-                        yield $bTxn;
+        if ($openDate !== null) {
+            if ($rTxn->payee !== 'Starting Balance' &&
+                $rTxn->category[1] !== 'Available this month') {
+                if ($budget->valid()) {
+                    $bTxn = $budget->current();
+                    $bDate = $bTxn->date;
+                    if ($bTxn->date < $rTxn->date) {
+                        do {
+                            $bTxn->date = $openDate;
+                            yield $bTxn;
 
-                        $budget->next();
-                        $bTxn = $budget->current();
-                    } while ($bTxn->date == $bDate);
+                            $budget->next();
+                            $bTxn = $budget->current();
+                        } while ($bTxn->date == $bDate);
+                    }
                 }
             }
+        } elseif ($rTxn->payee === 'Starting Balance') {
+            $openDate = $rTxn->date;
         }
         yield $rTxn;
     }

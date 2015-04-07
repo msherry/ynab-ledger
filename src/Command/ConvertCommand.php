@@ -147,7 +147,11 @@ function toLedger (Generator $transactions) {
 
                 do {
                     $target = new LedgerPosting;
-                    $target->account = array_merge(['Expenses'], $txn->category);
+                    if ($txn->category[0] == 'Income') {
+                        $target->account = $txn->category;
+                    } else {
+                        $target->account = array_merge(['Expenses'], $txn->category);
+                    }
                     $target->currency = $txn->currency;
                     $target->amount = $txn->out - $txn->in;
                     sscanf($txn->memo, "(Split %d/%d) %[^\r]", $i, $k, $target->note);
@@ -165,7 +169,11 @@ function toLedger (Generator $transactions) {
 
             } else {
                 $target = new LedgerPosting;
-                $target->account = array_merge(['Expenses'], $txn->category);
+                if ($txn->category[0] == 'Income') {
+                    $target->account = $txn->category;
+                } else {
+                    $target->account = array_merge(['Expenses'], $txn->category);
+                }
                 $target->currency = $txn->currency;
                 $target->amount = $txn->out - $txn->in;
                 $lTxn->postings[] = $target;

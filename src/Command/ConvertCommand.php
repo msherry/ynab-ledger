@@ -147,7 +147,9 @@ function toLedger (Generator $transactions) {
 
                 do {
                     $target = new LedgerPosting;
-                    if ($txn->category[0] == 'Income') {
+                    if (empty($txn->category)) {
+                        $target->account = getAccount(explode(' : ', explode(' / ', $txn->payee, 2)[1])[1], $txn);
+                    } elseif ($txn->category[0] == 'Income') {
                         $target->account = $txn->category;
                     } else {
                         $target->account = array_merge(['Expenses'], $txn->category);
@@ -230,7 +232,7 @@ function readRegister (SplFileObject $registerFile, NumberFormatter $fmt) {
         $txn->account = $row[0];
         $txn->date = $convertDate($row[3])->setTime(0, 0, 0);
         $txn->payee = $row[4];
-        $txn->category = array_map('trim', explode(':', $row[5]));
+        $txn->category = array_filter(array_map('trim', explode(':', $row[5])));
         // if (!in_array($row[6], $txn->category, true)) {
         //     array_unshift($txn->category, $row[6]);
         // }

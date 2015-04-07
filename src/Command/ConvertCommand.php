@@ -93,12 +93,14 @@ function toLedger (Generator $transactions) {
                 $startDate = $txn->date;
                 $lTxn->isVirtual = true;
                 do {
-                    $posting = new LedgerPosting;
-                    $posting->currency = $txn->currency;
-                    $posting->amount = $txn->in;
-                    $posting->account = array_merge(['Funds'], $txn->category);
-                    if ($posting->amount !== 0.00) {
-                        $lTxn->postings[] = $posting;
+                    if ($txn->category[0] != 'Pre-YNAB Debt') {
+                        $posting = new LedgerPosting;
+                        $posting->currency = $txn->currency;
+                        $posting->amount = $txn->in;
+                        $posting->account = array_merge(['Funds'], $txn->category);
+                        if ($posting->amount !== 0.00) {
+                            $lTxn->postings[] = $posting;
+                        }
                     }
 
                     $transactions->next();

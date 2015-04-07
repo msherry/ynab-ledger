@@ -307,7 +307,9 @@ class ConvertCommand extends Command {
         $export = toLedger(multiRead(new SplFileObject($budgetFile), new SplFileObject($registerFile), $fmt));
 
         foreach ($export as $txn) {
-            echo "{$txn->date->format('Y-m-d')} $txn->payee"
+            echo "{$txn->date->format('Y-m-d')} "
+                , $txn->state ? "$txn->state " : ""
+                , $txn->payee
                 , !empty($txn->note) ? "  ; $txn->note" : ""
                 , PHP_EOL;
             foreach ($txn->postings as $posting) {

@@ -95,7 +95,7 @@ function toLedger (Generator $transactions) {
                 do {
                     $posting = new LedgerPosting;
                     $posting->currency = $txn->currency;
-                    $posting->amount = $txn->in - $txn->out;
+                    $posting->amount = $txn->in;
                     $posting->account = array_merge(['Funds'], $txn->category);
                     if ($posting->amount !== 0.00) {
                         $lTxn->postings[] = $posting;

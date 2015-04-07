@@ -341,12 +341,14 @@ class ConvertCommand extends Command {
                 , !empty($txn->note) ? "  ; $txn->note" : ""
                 , PHP_EOL;
             foreach ($txn->postings as $posting) {
-                echo "  "
-                    , $txn->isVirtual ? "[" : ($posting->isVirtual ? "(" : "")
-                    , implode(':', $posting->account)
-                    , $txn->isVirtual ? "]" : ($posting->isVirtual ? ")" : "");
+                printf(
+                    "  %-40s",
+                    ($txn->isVirtual ? "[" : ($posting->isVirtual ? "(" : ""))
+                    . implode(':', $posting->account)
+                    . ($txn->isVirtual ? "]" : ($posting->isVirtual ? ")" : ""))
+                );
                 if ($posting->currency !== null) {
-                    echo "  {$fmt->formatCurrency($posting->amount, $posting->currency)}";
+                    printf("  %10s", $fmt->formatCurrency($posting->amount, $posting->currency));
                 }
                 echo !empty($posting->note) ? "  ; $posting->note" : "", PHP_EOL;
             }

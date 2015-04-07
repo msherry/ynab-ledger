@@ -244,14 +244,15 @@ function readRegister (SplFileObject $registerFile, NumberFormatter $fmt) {
         $txns[] = $txn;
     }
 
-    // Sort by date, group splits, promote income and fall back on line in file
+    // Sort by date, promote transfers, group splits, promote income and fall back on line in file
     usort($txns,
           function ($a, $b) use ($convertDate) {
               return strcmp($a->date->format('U'), $b->date->format('U'))
-                  ?: ((in_array('Split', [substr($a->memo, 1, 5), substr($b->memo, 1, 5)]) ?
-                       strcmp($a->memo, $b->memo) : false)
-                      ?: ($b->out > 0.01 // Include empty starting balance transactions
-                          ? 0 : $a->line - $b->line));
+                  ?: ($a->out < 0.01 ? -1
+                      : (strpos($b->payee, 'Transfer : ') !== false ? 1
+                         : ((in_array('Split', [substr($a->memo, 1, 5), substr($b->memo, 1, 5)]) ?
+                             strcmp($a->memo, $b->memo)
+                             : $a->line - $b->line))));
           }
     );
     foreach ($txns as $txn) yield $txn;

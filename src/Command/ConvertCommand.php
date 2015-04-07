@@ -66,6 +66,15 @@ function getAccount ($name, $txn) {
     return $accounts[$name];
 }
 
+function createCategoryPosting (RegisterTransaction $txn) {
+    $category = new LedgerPosting;
+    $category->isVirtual = true;
+    $category->currency = $txn->currency;
+    $category->account = array_merge(['Funds'], $txn->category);
+    $category->amount = $txn->in - $txn->out;
+    return $category;
+}
+
 function toLedger (Generator $transactions) {
     $transactions->rewind();
     $accounts = [];
@@ -82,11 +91,12 @@ function toLedger (Generator $transactions) {
 
             if ($txn instanceof BudgetTransaction) {
                 $startDate = $txn->date;
+                $lTxn->isVirtual = true;
                 do {
                     $posting = new LedgerPosting;
                     $posting->currency = $txn->currency;
                     $posting->amount = $txn->in - $txn->out;
-                    $posting->account = array_merge(['Expenses'], $txn->category);
+                    $posting->account = array_merge(['Funds'], $txn->category);
                     if ($posting->amount !== 0.00) {
                         $lTxn->postings[] = $posting;
                     }
@@ -134,6 +144,8 @@ function toLedger (Generator $transactions) {
 
                 $source = new LedgerPosting;
                 $source->account = getAccount($txn->account, $txn);
+                $source->amount = $txn->in - $txn->out;
+                $source->currency = $txn->currency;
                 $lTxn->postings[] = $source;
 
                 $lTxn->payee = 'Transfer';
@@ -144,6 +156,7 @@ function toLedger (Generator $transactions) {
 
                 $source = new LedgerPosting;
                 $source->account = getAccount($txn->account, $txn);
+                $source->currency = $txn->currency;
 
                 do {
                     $target = new LedgerPosting;
@@ -156,8 +169,12 @@ function toLedger (Generator $transactions) {
                     }
                     $target->currency = $txn->currency;
                     $target->amount = $txn->out - $txn->in;
+                    $source->amount += $txn->in - $txn->out;
                     sscanf($txn->memo, "(Split %d/%d) %[^\r]", $i, $k, $target->note);
                     $lTxn->postings[] = $target;
+                    if ($target->account[0] == "Expenses") {
+                        $lTxn->postings[] = createCategoryPosting($txn);
+                    }
 
                     $transactions->next();
                     $txn = $transactions->current();
@@ -182,7 +199,13 @@ function toLedger (Generator $transactions) {
 
                 $source = new LedgerPosting;
                 $source->account = getAccount($txn->account, $txn);
+                $source->amount = $txn->in - $txn->out;
+                $source->currenty = $txn->currency;
                 $lTxn->postings[] = $source;
+
+                if ($target->account[0] == "Expenses") {
+                    $lTxn->postings[] = createCategoryPosting($txn);
+                }
             }
             yield $lTxn;
             next:
@@ -316,7 +339,10 @@ class ConvertCommand extends Command {
                 , !empty($txn->note) ? "  ; $txn->note" : ""
                 , PHP_EOL;
             foreach ($txn->postings as $posting) {
-                echo "  " . implode(':', $posting->account);
+                echo "  "
+                    , $txn->isVirtual ? "[" : ($posting->isVirtual ? "(" : "")
+                    , implode(':', $posting->account)
+                    , $txn->isVirtual ? "]" : ($posting->isVirtual ? ")" : "");
                 if ($posting->currency !== null) {
                     echo "  {$fmt->formatCurrency($posting->amount, $posting->currency)}";
                 }

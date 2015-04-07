@@ -8,4 +8,5 @@ class LedgerTransaction {
     public $payee;
     public $note;
     public $postings = [];
+    public $isVirtual = false;
 }
